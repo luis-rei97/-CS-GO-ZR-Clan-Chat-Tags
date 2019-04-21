@@ -18,7 +18,7 @@ public Plugin myinfo =
 	name = "[CS:GO ZR] Tags for Zombie Reloaded",
 	description = "Chat and Clan Tags for Zombie Reloaded",
 	author = "Hallucinogenic Troll",
-	version = "1.0",
+	version = "1.1",
 	url = "PTFun.net"
 };
 
@@ -26,8 +26,8 @@ public void OnPluginStart()
 {
 	HookEvent("round_start", Event_RoundStart);
 	
-	g_CVAR_EnableChatTags = CreateConVar("zr_chattags_enable", "0", "Enables the Chat Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
-	g_CVAR_EnableClanTags = CreateConVar("zr_clantags_enable", "0", "Enables the Clan Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
+	g_CVAR_EnableChatTags = CreateConVar("zr_chattags_enable", "1", "Enables the Chat Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
+	g_CVAR_EnableClanTags = CreateConVar("zr_clantags_enable", "1", "Enables the Clan Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
 	
 	AutoExecConfig(true, "zr_chat_clan_tags");
 }

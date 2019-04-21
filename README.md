@@ -24,3 +24,4 @@ Currently, it has the following Tags:
 # Changelog
 
 * **1.0** - Release;
+* **1.1** - Inverted the CVAR initial values (before, the plugin started with disabled options), and added the CFG file in the repository;
