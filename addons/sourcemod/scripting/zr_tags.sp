@@ -1,7 +1,12 @@
 #include <sourcemod>
 #include <cstrike>
-#include <scp>
 #include <zombiereloaded>
+#include <scp>
+
+#undef REQUIRE_PLUGIN
+#include <leader>
+#include <zrcommander>
+#define REQUIRE_PLUGIN
 
 #pragma newdecls required
 
@@ -13,12 +18,15 @@ int g_EnableClanTags;
 
 bool MotherZombie[MAXPLAYERS+1];
 
+bool leader = false;
+bool commander = false;
+
 public Plugin myinfo =
 {
 	name = "[CS:GO ZR] Tags for Zombie Reloaded",
 	description = "Chat and Clan Tags for Zombie Reloaded",
 	author = "Hallucinogenic Troll",
-	version = "1.1",
+	version = "1.2",
 	url = "PTFun.net"
 };
 
@@ -26,9 +34,8 @@ public void OnPluginStart()
 {
 	HookEvent("round_start", Event_RoundStart);
 	
-	g_CVAR_EnableChatTags = CreateConVar("zr_chattags_enable", "1", "Enables the Chat Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
-	g_CVAR_EnableClanTags = CreateConVar("zr_clantags_enable", "1", "Enables the Clan Tags for Zombies, Mother Zombies and Humans", _, true, 0.0, true, 1.0);
-	
+	g_CVAR_EnableChatTags = CreateConVar("zr_chattags_enable", "1", "Enables the Chat Tags for Zombies, Mother Zombies, Humans, and possibly, Leader/Commander", _, true, 0.0, true, 1.0);
+	g_CVAR_EnableClanTags = CreateConVar("zr_clantags_enable", "1", "Enables the Clan Tags for Zombies, Mother Zombies, Humans, and possibly, Leader/Commander", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "zr_chat_clan_tags");
 }
 
@@ -39,6 +46,31 @@ public void OnConfigsExecuted()
 	
 	if(g_EnableClanTags)
 		CreateTimer(0.1, Timer_CheckDelay, _, TIMER_REPEAT);
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	MarkNativeAsOptional("Leader_CurrentLeader");
+	MarkNativeAsOptional("zrc_is");
+	return APLRes_Success;
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if (StrEqual(name, "leader"))
+		leader = false;
+		
+	if(StrEqual(name, "zrcommander"))
+		commander = false;
+}
+ 
+public void OnLibraryAdded(const char[] name)
+{
+	if (StrEqual(name, "leader"))
+		leader = true;
+		
+	if(StrEqual(name, "zrcommander"))
+		commander = true;
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -63,7 +95,14 @@ public void CheckTag(int client)
 	{
 		char tag[40];
 		if(ZR_IsClientHuman(client))
-			Format(tag, sizeof(tag), "[Human] ");
+		{
+			if(leader && Leader_CurrentLeader() == client)
+				Format(tag, sizeof(tag), "[Leader] ");	
+			else if(commander && zrc_is(client))
+				Format(tag, sizeof(tag), "[Commander] ");			
+			else		
+				Format(tag, sizeof(tag), "[Human] ");
+		}
 		else if(ZR_IsClientZombie(client))
 		{
 			if(MotherZombie[client])
@@ -101,7 +140,14 @@ public Action OnChatMessage(int &client, Handle hRecipients, char[] name, char[]
 		{
 			char tag[40];
 			if(ZR_IsClientHuman(client))
-				Format(tag, sizeof(tag), "\x0B[Human]\x01");
+			{
+				if(leader && Leader_CurrentLeader() == client)
+					Format(tag, sizeof(tag), "\x0E[Leader]\x01");
+				else if(commander && zrc_is(client))
+					Format(tag, sizeof(tag), "\x0E[Commander]\x01");				
+				else
+					Format(tag, sizeof(tag), "\x0B[Human]\x01");
+			}
 			else if(ZR_IsClientZombie(client))
 			{
 				if(MotherZombie[client])
